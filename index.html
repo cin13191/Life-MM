@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 人生贖回計畫：複利進攻計算機</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #27ae60; --highlight: #eafff2; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; color: var(--primary); padding: 15px; margin: 0; }
+        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--accent); margin-bottom: 30px; font-size: 1.5em; }
+        
+        .input-section { background: #f9f9f9; padding: 25px; border-radius: 8px; margin-bottom: 25px; }
+        .row { display: grid; gap: 20px; margin-bottom: 20px; }
+        
+        .row-1 { grid-template-columns: repeat(3, 1fr); }
+        .row-2 { grid-template-columns: repeat(2, 1fr); }
+        .row-3 { grid-template-columns: 1fr; }
+
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; color: #34495e; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 5px rgba(39, 174, 96, 0.2); }
+        
+        button { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1.2em; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #219150; transform: translateY(-1px); }
+        
+        .table-container { overflow-x: auto; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th, td { padding: 14px; border-bottom: 1px solid #eee; text-align: right; }
+        th { background: #f8f9fa; color: #666; font-size: 0.85em; white-space: nowrap; }
+        .goal-met { background-color: var(--highlight) !important; color: var(--accent); font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .row-1, .row-2 { grid-template-columns: 1fr; gap: 15px; }
+            .container { padding: 15px; }
+            h2 { font-size: 1.2em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚀 人生贖回計畫：複利進攻計算機</h2>
+    
+    <div class="input-section">
+        <div class="row row-1">
+            <div>
+                <label>初始投入金額 (元)</label>
+                <input type="number" id="initSum" value="0">
+            </div>
+            <div>
+                <label>前 5 年每月投入 (元)</label>
+                <input type="number" id="m1" value="20000">
+            </div>
+            <div>
+                <label>第 6 年起每月投入 (元)</label>
+                <input type="number" id="m2" value="20000">
+            </div>
+        </div>
+
+        <div class="row row-2">
+            <div>
+                <label>預期年報酬率 (%)</label>
+                <input type="number" id="annualRate" value="10">
+            </div>
+            <div>
+                <label>複利方式</label>
+                <select id="compoundFreq">
+                    <option value="365">日複利</option>
+                    <option value="12">月複利</option>
+                    <option value="4">季複利</option>
+                    <option value="2">半年複利</option>
+                    <option value="1" selected>年複利</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row row-3">
+            <div>
+                <label>目標年利息 (退休每月領的金額)</label>
+                <input type="number" id="targetInterest" value="360000">
+            </div>
+        </div>
+
+        <button onclick="calculate()">執行精算戰報</button>
+    </div>
+
+    <div class="table-container">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th style="text-align: left;">年份</th>
+                    <th>總投入本金</th>
+                    <th>當年度投入</th>
+                    <th>當年度利息</th>
+                    <th>年底資產總額</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const initSum = parseFloat(document.getElementById('initSum').value) || 0;
+        let balance = initSum;
+        const m1 = parseFloat(document.getElementById('m1').value) || 0;
+        const m2 = parseFloat(document.getElementById('m2').value) || 0;
+        const annualRate = (parseFloat(document.getElementById('annualRate').value) || 0) / 100;
+        const freq = parseInt(document.getElementById('compoundFreq').value);
+        const target = parseFloat(document.getElementById('targetInterest').value) || 0;
+        
+        const tbody = document.querySelector('#resultTable tbody');
+        tbody.innerHTML = '';
+
+        let totalInvested = initSum;
+
+        for (let year = 1; year <= 30; year++) {
+            let monthlyIn = (year <= 5) ? m1 : m2;
+            let yearInvest = monthlyIn * 12;
+            let yearInterest = 0;
+
+            for (let month = 1; month <= 12; month++) {
+                balance += monthlyIn;
+                let monthsPerPeriod = 12 / freq;
+                
+                if (freq === 365) {
+                    let dailyRate = annualRate / 365;
+                    let nextBalance = balance * Math.pow((1 + dailyRate), 30.42); 
+                    yearInterest += (nextBalance - balance);
+                    balance = nextBalance;
+                } else if (month % monthsPerPeriod === 0) {
+                    let periodRate = annualRate / freq;
+                    let nextBalance = balance * (1 + periodRate);
+                    yearInterest += (nextBalance - balance);
+                    balance = nextBalance;
+                }
+            }
+
+            totalInvested += yearInvest;
+            const isGoalMet = yearInterest >= target;
+            
+            const row = `<tr class="${isGoalMet ? 'goal-met' : ''}">
+                <td style="text-align: left;">第 ${year} 年 ${isGoalMet ? ' ✅達成' : ''}</td>
+                <td>${Math.round(totalInvested).toLocaleString()}</td>
+                <td>${Math.round(yearInvest).toLocaleString()}</td>
+                <td>${Math.round(yearInterest).toLocaleString()}</td>
+                <td>${Math.round(balance).toLocaleString()}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        }
+    }
+    calculate();
+</script>
+
+</body>
+</html>
