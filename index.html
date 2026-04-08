@@ -124,7 +124,7 @@
         tbody.innerHTML = '';
 
         // 2. 開始年度迴圈
-        for (let year = 1; year <= 30; year++) {
+        for (let year = 1; year <= 50; year++) {
             // 判斷當年度是否還在投入期
             let monthlyIn = (year < stopYear) ? ((year <= 5) ? m1 : m2) : 0;
             let yearInvest = monthlyIn * 12;
